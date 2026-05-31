@@ -571,6 +571,10 @@ RULES (strict — follow exactly):
       <div><strong style="font-size:14px">Show Download HTML Button</strong><br/><span style="font-size:12px;color:var(--text2)">Show or hide the "Download HTML" button in the builder</span></div>
       <button class="toggle on" id="downloadToggle" onclick="toggleDownloadBtn()"></button>
     </div>
+    <div class="toggle-row" style="margin-top:10px">
+      <div><strong style="font-size:14px">Show Copy JSON in Output HTML</strong><br/><span style="font-size:12px;color:var(--text2)">Include a "Copy JSON" button in the generated quiz HTML</span></div>
+      <button class="toggle on" id="copyJSONToggle" onclick="toggleCopyJSONOutput()"></button>
+    </div>
     <div style="margin-top:12px">
       <label>Custom Footer Text</label>
       <input type="text" id="footerTextInput" value="Made with OpenQuiz · Self Study" placeholder="e.g. My Quiz App" oninput="setSetting('footer',this.value)" style="margin-top:4px"/>
@@ -590,6 +594,17 @@ RULES (strict — follow exactly):
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- ═══ MODALS ═══ -->
+<div class="modal-wrap hidden" id="versionModal">
+  <div class="modal modal-wide">
+    <div class="modal-title">📜 Version History</div>
+    <div class="modal-sub" id="versionModalSub">Loading versions...</div>
+    <div class="version-list" id="versionList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('versionModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-wrap hidden" id="deleteModal">
   <div class="modal">
     <div class="modal-title">🗑️ Delete Quiz</div>

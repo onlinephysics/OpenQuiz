@@ -477,12 +477,14 @@ function handleJSONFileUpload(e){
 }
 
 // ═══ SAVE ═══
-async function saveQuiz(){
+async function saveQuiz(label){
   const title=document.getElementById('f-title').value.trim();
   if(!title){toast('⚠️ Please enter a quiz title','err');switchBTab('info');return;}
   if(builderState.questions.length===0){toast('⚠️ Add at least one question','err');switchBTab('questions');return;}
+  const id=currentEditId||('q_'+Date.now());
+  const now=Date.now();
   const quiz={
-    id: currentEditId||('q_'+Date.now()),
+    id,
     title,
     subject:document.getElementById('f-subject').value.trim(),
     chapter:document.getElementById('f-chapter').value.trim(),
@@ -494,11 +496,43 @@ async function saveQuiz(){
     colorScheme:builderState.colorScheme,
     backdropData:builderState.backdropData,
     questions:builderState.questions,
-    updatedAt:Date.now()
+    updatedAt:now,
+    currentVersion: 0
   };
+  const existing=currentEditId?await getQuiz(currentEditId):null;
+  if(existing&&existing.currentVersion) quiz.currentVersion=existing.currentVersion;
+  quiz.currentVersion=(quiz.currentVersion||0)+1;
+  quiz.updatedAt=now;
   await putQuiz(quiz);
-  currentEditId=quiz.id;
-  toast('💾 Quiz saved!','ok');
+  currentEditId=id;
+  const version={
+    id: 'v_'+now+'_'+Math.random().toString(36).slice(2,6),
+    quizId: id,
+    num: quiz.currentVersion,
+    snapshot: JSON.parse(JSON.stringify(quiz)),
+    savedAt: now,
+    label: label||'Manual save'
+  };
+  await putVersion(version);
+  toast('💾 Quiz saved! (v'+quiz.currentVersion+')','ok');
+}
+
+async function createVersionSnapshot(label){
+  if(!currentEditId) return;
+  const quiz=await getQuiz(currentEditId);
+  if(!quiz) return;
+  quiz.currentVersion=(quiz.currentVersion||0)+1;
+  quiz.updatedAt=Date.now();
+  await putQuiz(quiz);
+  const version={
+    id: 'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    quizId: currentEditId,
+    num: quiz.currentVersion,
+    snapshot: JSON.parse(JSON.stringify(quiz)),
+    savedAt: Date.now(),
+    label: label||'Snapshot'
+  };
+  await putVersion(version);
 }
 
 // ═══ PREVIEW ═══

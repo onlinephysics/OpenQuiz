@@ -19,17 +19,36 @@ function getQuizData(){
   };
 }
 
-function downloadQuizHTML(){
+async function downloadQuizHTML(){
   const data=getQuizData();
   if(!data.title){toast('⚠️ Add a title first','err');return;}
   if(data.questions.length===0){toast('⚠️ Add at least one complete question','err');return;}
+  // Autosave before download
+  if(currentEditId){
+    await createVersionSnapshot('Auto-save before download');
+  }else{
+    await saveQuiz('Auto-save before download');
+  }
   generateAndDownloadHTML(data);
 }
 
 async function downloadQuizHTMLById(id){
-  const quizzes=await getAllQuizzes();
-  const q=quizzes.find(q=>q.id===id);
-  if(q) generateAndDownloadHTML(q);
+  const q=await getQuiz(id);
+  if(!q) return;
+  // Create a version snapshot
+  const v={
+    id: 'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    quizId: id,
+    num: (q.currentVersion||0)+1,
+    snapshot: JSON.parse(JSON.stringify(q)),
+    savedAt: Date.now(),
+    label: 'Downloaded HTML'
+  };
+  q.currentVersion=v.num;
+  q.updatedAt=Date.now();
+  await putQuiz(q);
+  await putVersion(v);
+  generateAndDownloadHTML(q);
 }
 
 function generateAndDownloadHTML(data){
@@ -106,7 +125,8 @@ ${data.backdropData?'.start-card::before{content:"";position:absolute;inset:0;ba
 .start-btn:hover{background:var(--primary-hover)}
 .quiz-wrapper{width:100%;max-width:600px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;padding:24px 16px}
 .quiz-container{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
-.quiz-header{background:var(--header-grad);padding:12px 16px 0;color:#fff}
+.quiz-header{${bannerStyle}background-size:cover;background-position:center;padding:12px 16px 0;color:#fff}
+${data.backdropData?'.quiz-header{position:relative !important}.quiz-header::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}.quiz-header>*{position:relative;z-index:1}.quiz-header .progress-wrap{z-index:2}':''}
 .quiz-header-top{display:flex;justify-content:space-between;align-items:center}
 .quiz-header-title{font-size:17px;font-weight:700;color:#fff;line-height:1.3;margin:8px 0 0}
 .quiz-header-location{font-size:10px;font-weight:500;color:rgba(255,255,255,.65);margin:1px 0 0}
@@ -198,15 +218,15 @@ body.dark .option-btn:nth-child(3) .opt-label{background:#1a2e1a;color:#a5d6a7}b
 .site-footer{border-top:1px solid var(--border);padding:16px;text-align:center;margin-top:auto}
 .footer-copy{font-size:11px;color:var(--muted)}
 @media(max-width:480px){.result-stats-grid{grid-template-columns:repeat(2,1fr)}.quiz-wrapper{padding:12px 8px}.card-body-quiz{padding:16px}}
-.json-copy-fab{position:fixed;bottom:18px;left:18px;z-index:400;background:var(--card);border:1.5px solid var(--border);color:var(--text-secondary);padding:7px 13px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:all .2s;display:flex;align-items:center;gap:5px}
-.json-copy-fab:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+${getSetting('copyJSON','1')==='1'?`.json-copy-fab{position:fixed;bottom:18px;left:18px;z-index:400;background:var(--card);border:1.5px solid var(--border);color:var(--text-secondary);padding:7px 13px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:all .2s;display:flex;align-items:center;gap:5px}
+.json-copy-fab:hover{background:var(--primary);color:#fff;border-color:var(--primary)}`:''}
 </style>
 </head>
 <body>
 
-<button class="json-copy-fab" onclick="copyQuizJSON()" title="Copy quiz JSON">
+${getSetting('copyJSON','1')==='1'?`<button class="json-copy-fab" onclick="copyQuizJSON()" title="Copy quiz JSON">
   📋 Copy JSON
-</button>
+</button>`:''}
 
 <div class="start-screen" id="startScreen">
   <div class="start-card">
@@ -282,7 +302,7 @@ const QUIZ_CONFIG={title:${JSON.stringify(data.title)},subject:${JSON.stringify(
 const QUESTIONS=${questionsJS};
 const QUIZ_JSON=${JSON.stringify(jsonData)};
 
-function copyQuizJSON(){
+${getSetting('copyJSON','1')==='1'?`function copyQuizJSON(){
   navigator.clipboard.writeText(QUIZ_JSON).then(()=>{
     const btn=document.querySelector('.json-copy-fab');
     const orig=btn.innerHTML;
@@ -290,7 +310,7 @@ function copyQuizJSON(){
     btn.style.background='var(--correct)';btn.style.color='#fff';
     setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';btn.style.color='';},2000);
   }).catch(()=>alert('Copy failed. Please copy manually.'));
-}
+}`:''}
 
 const state={currentIndex:0,score:0,correctCount:0,wrongCount:0,timeoutCount:0,totalQuestions:0,totalTimeTaken:0,timerInterval:null,questionStartTime:0,results:[],shuffled:[]};
 

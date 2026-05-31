@@ -3,7 +3,7 @@
    ════════════════════════════════════════ */
 
 const DB_NAME = 'OpenQuizDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'quizzes';
 let db = null;
 let currentEditId = null;
