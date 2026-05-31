@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║  OpenQuiz — MCQ Quiz Builder                                    ║
+║  by Self Study (www.selfstudy.xyz)                              ║
+║  Source: openquiz.selfstudy.xyz/source-code                     ║
+║  Zero Backend · IndexedDB · Multi-File                          ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>OpenQuiz — Quiz Builder by Self Study</title>
+<meta name="theme-color" content="#6c3bff"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/base.css"/>
+<link rel="stylesheet" href="css/layout.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+<link rel="stylesheet" href="css/responsive.css"/>
+</head>
+<body>
+
+<div id="app">
+
+<!-- ════════════════ TOPBAR ════════════════ -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <div class="topbar-logo">
+      <svg viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="url(#lg1)"/>
+        <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="21" cy="18" r="4" fill="#ff5f7a"/>
+        <path d="M19.5 18l1 1 2-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs><linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#6c3bff"/><stop offset="1" stop-color="#ff5f7a"/></linearGradient></defs>
+      </svg>
+      <div>
+        <div class="logo-text">OpenQuiz</div>
+        <div class="logo-by">by <a href="https://www.selfstudy.xyz" target="_blank" style="-webkit-text-fill-color:inherit;color:var(--text3)">Self Study</a></div>
+      </div>
+    </div>
+  </div>
+  <nav class="topbar-nav">
+    <button class="nav-btn active" onclick="showPage('library')" id="nav-library">📚 Library</button>
+    <button class="nav-btn" onclick="showPage('builder')" id="nav-builder">✏️ Build</button>
+    <button class="nav-btn" onclick="showPage('help')" id="nav-help">❓ Help</button>
+  </nav>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeToggle" title="Toggle theme">🌙</button>
+    <button class="btn btn-ghost btn-sm" onclick="showPage('settings')" id="nav-settings" title="Settings">⚙️</button>
+  </div>
+</div>
+
+<!-- ════════════════ MOBILE SIDEBAR ════════════════ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">OpenQuiz</span>
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="sidebar-nav-btn active" onclick="showPage('library')" id="snav-library">📚 Library</button>
+    <button class="sidebar-nav-btn" onclick="showPage('builder')" id="snav-builder">✏️ Build Quiz</button>
+    <button class="sidebar-nav-btn" onclick="showPage('help')" id="snav-help">❓ Help & Guide</button>
+    <button class="sidebar-nav-btn" onclick="showPage('settings')" id="snav-settings">⚙️ Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="toggleTheme();closeSidebar()">🌙 Theme</button>
+  </div>
+</div>
+
+<!-- ════════════════ LIBRARY PAGE ════════════════ -->
+<div class="page" id="page-library">
+  <div class="page-header anim-up">
+    <div class="page-header-row">
+      <div>
+        <div class="page-title">📚 My Quiz Library</div>
+        <div class="page-sub">All your quizzes saved locally</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="importQuizFromFile()">📂 Import</button>
+        <button class="btn btn-primary" onclick="newQuiz()">✏️ New Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Library Stats (extra feature) -->
+  <div class="library-stats anim-up-1" id="libStats">
+    <span class="lib-stat">📚 <strong>0</strong> Quizzes</span>
+    <span class="lib-stat">❓ <strong>0</strong> Questions</span>
+  </div>
+
+  <!-- Library Search & Sort (extra feature) -->
+  <div class="library-controls anim-up-1">
+    <div class="library-search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="libSearch" placeholder="Search quizzes by title, subject..." oninput="onLibSearch()"/>
+    </div>
+    <div class="library-sort">
+      <select id="libSort" onchange="onLibSort()">
+        <option value="newest">🕐 Newest First</option>
+        <option value="oldest">🕐 Oldest First</option>
+        <option value="alpha">📋 A–Z</option>
+        <option value="qcount">❓ Most Questions</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="quizGrid" class="quiz-grid anim-up-2"></div>
+</div>
+
+<!-- ════════════════ BUILDER PAGE ════════════════ -->
+<div class="page hidden" id="page-builder">
+  <div class="page-header anim-up">
+    <div class="page-header-row">
+      <div>
+        <div class="page-title" id="builderTitle">✏️ New Quiz</div>
+        <div class="page-sub">Craft your quiz, then download or save</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('library')">← Back</button>
+        <button class="btn btn-success btn-sm" onclick="saveQuiz()">💾 Save</button>
+        <button class="btn btn-primary btn-sm" onclick="downloadQuizHTML()">⬇️ Download HTML</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="build-progress anim-up-1"><div class="build-progress-fill" id="buildProgress" style="width:10%"></div></div>
+
+  <div class="builder-tabs anim-up-2">
+    <div class="btab active" id="btab-info" onclick="switchBTab('info')">📋 Info</div>
+    <div class="btab" id="btab-questions" onclick="switchBTab('questions')">❓ Questions</div>
+    <div class="btab" id="btab-style" onclick="switchBTab('style')">🎨 Style</div>
+    <div class="btab" id="btab-import" onclick="switchBTab('import')">📥 Import JSON</div>
+    <div class="btab" id="btab-preview" onclick="switchBTab('preview')">👁 Preview</div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div id="tab-info" class="anim-up-3">
+    <div class="card">
+      <div class="section-label">Quiz Details</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quiz Title *</label>
+          <input type="text" id="f-title" placeholder="e.g. Physics Chapter 1" oninput="updateProgress()"/>
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" id="f-subject" placeholder="e.g. Physics"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Chapter / Topic</label>
+          <input type="text" id="f-chapter" placeholder="e.g. Motion"/>
+        </div>
+        <div class="form-group">
+          <label>Sub-topic (optional)</label>
+          <input type="text" id="f-topic" placeholder="e.g. Velocity"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Optional short description for the quiz..." style="min-height:60px"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Timer per Question (seconds)</label>
+          <input type="number" id="f-timer" value="30" min="5" max="300"/>
+        </div>
+        <div class="form-group">
+          <label>Author / Creator</label>
+          <input type="text" id="f-author" placeholder="e.g. Your Name"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS TAB -->
+  <div id="tab-questions" class="hidden">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="section-label" style="margin:0">Questions <span id="qcount-badge" style="background:var(--c1l);color:var(--c1);padding:2px 8px;border-radius:99px;font-size:11px;margin-left:6px">0</span></div>
+        <button class="btn btn-primary btn-sm" onclick="addQuestion()">+ Add Question</button>
+      </div>
+      <div id="q-list" class="q-list"></div>
+      <div id="q-empty" style="text-align:center;padding:32px;color:var(--text3)">
+        <div style="font-size:32px;margin-bottom:8px">📝</div>
+        <div style="font-size:14px">No questions yet. Click <strong>+ Add Question</strong> to start.</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px" onclick="addQuestion()">+ Add Another Question</button>
+    </div>
+  </div>
+
+  <!-- STYLE TAB -->
+  <div id="tab-style" class="hidden">
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-label">Quiz Icon</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
+        <div id="iconPreview" class="icon-preview">📝</div>
+        <div style="flex:1">
+          <label>Selected Icon</label>
+          <input type="text" id="f-icon" value="📝" placeholder="Paste emoji or select below" oninput="updateIconPreview()"/>
+        </div>
+      </div>
+      <div class="section-label" style="margin-top:10px">Emoji Presets</div>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-label">Color Scheme</div>
+      <div class="scheme-grid" id="schemeGrid"></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Background Image (optional)</div>
+      <div class="backdrop-drop" id="backdropDrop" onclick="triggerBackdropUpload()">
+        <input type="file" id="backdropFile" accept="image/*" onchange="handleBackdropUpload(event)" style="display:none"/>
+        <div id="backdropEmpty">
+          <div style="font-size:28px;margin-bottom:6px">🖼️</div>
+          <div style="font-size:13px;color:var(--text2)">Click to upload a backdrop image</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">JPG, PNG, WebP — will be embedded as base64</div>
+        </div>
+        <img id="backdropPreview" class="backdrop-preview"/>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="clearBackdrop()" id="clearBackdropBtn" style="display:none">✕ Remove Image</button>
+        <div style="flex:1;font-size:11px;color:var(--text3);display:flex;align-items:center">Used as banner background in quiz card & start screen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT JSON TAB -->
+  <div id="tab-import" class="hidden">
+    <div class="card">
+      <div class="section-label">Import JSON</div>
+      <div class="import-tabs">
+        <div class="itab active" id="itab-paste" onclick="switchImportTab('paste')">📋 Paste JSON</div>
+        <div class="itab" id="itab-file" onclick="switchImportTab('file')">📂 From File</div>
+      </div>
+      <div id="import-paste">
+        <label>Paste your quiz JSON below</label>
+        <textarea class="json-area" id="jsonInput" placeholder='{"title":"My Quiz","questions":[...]}' oninput="validateJSON()"></textarea>
+        <div id="jsonStatus" style="display:none" class="json-status"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="importFromJSON()">📥 Import JSON</button>
+          <button class="btn btn-ghost" onclick="loadExampleJSON()">🧪 Load Example</button>
+          <button class="btn btn-ghost" onclick="clearJSONInput()">✕ Clear</button>
+        </div>
+      </div>
+      <div id="import-file" class="hidden">
+        <div class="backdrop-drop" style="margin-bottom:12px" onclick="document.getElementById('jsonFileInput').click()">
+          <input type="file" id="jsonFileInput" accept=".json" onchange="handleJSONFileUpload(event)" style="display:none"/>
+          <div style="font-size:28px;margin-bottom:6px">📂</div>
+          <div style="font-size:13px;color:var(--text2)">Click to load a .json file</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW TAB -->
+  <div id="tab-preview" class="hidden">
+    <div class="card">
+      <div class="section-label">Quiz Preview</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">This is a visual preview of how your quiz will look.</p>
+      <div id="previewContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ HELP PAGE (Enhanced AI Guide) ════════════════ -->
+<div class="page hidden" id="page-help">
+  <div class="page-header anim-up">
+    <div class="page-title">❓ Help & AI Guide</div>
+    <div class="page-sub">Learn how to use OpenQuiz and generate quizzes with AI</div>
+  </div>
+
+  <!-- Quick Start -->
+  <div class="help-section anim-up-1">
+    <div class="help-h2">🚀 Quick Start</div>
+    <div class="help-p">OpenQuiz lets you create beautiful MCQ quizzes in three ways:</div>
+    <div class="quick-start-grid">
+      <div class="card" style="padding:14px"><div style="font-size:20px;margin-bottom:6px">✏️</div><strong style="font-size:13px">Manual Builder</strong><br/><span style="font-size:12px;color:var(--text2)">Fill in the form, add questions one-by-one</span></div>
+      <div class="card" style="padding:14px"><div style="font-size:20px;margin-bottom:6px">📥</div><strong style="font-size:13px">Paste JSON</strong><br/><span style="font-size:12px;color:var(--text2)">Paste a valid JSON object directly</span></div>
+      <div class="card" style="padding:14px"><div style="font-size:20px;margin-bottom:6px">🤖</div><strong style="font-size:13px">AI-Generated</strong><br/><span style="font-size:12px;color:var(--text2)">Give an AI the prompt below, paste result</span></div>
+    </div>
+  </div>
+
+  <!-- JSON Format - Blank Template -->
+  <div class="help-section anim-up-1">
+    <div class="help-h2">📄 JSON Format — Blank Template</div>
+    <div class="help-p">Copy this blank template and fill in your own data.</div>
+    <div class="code-block" id="blankTemplate"><button class="copy-code-btn" onclick="copyCode('blankTemplate')">Copy</button>{
+  "title": "Your Quiz Title",
+  "subject": "Subject Name",
+  "chapter": "Chapter Name",
+  "topic": "Topic Name",
+  "description": "Short description (optional)",
+  "author": "Your Name",
+  "timerSeconds": 30,
+  "icon": "📝",
+  "colorScheme": "purple",
+  "questions": [
+    {
+      "question": "Your question text here?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0,
+      "explanation": "Explanation shown after answering (optional)",
+      "difficulty": "easy",
+      "tags": ["tag1", "tag2"]
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- Question Answer Indexing Guide (NEW) -->
+  <div class="help-section">
+    <div class="help-h2">🔢 Question Answer Indexing Guide <span class="help-badge badge-info">Important</span></div>
+    <div class="help-p">Each question's <code>correct</code> field uses <strong>0-based indexing</strong>. This means the first option has index <code>0</code>, not <code>1</code>.</div>
+    <div class="card" style="padding:16px;background:var(--bg3);border-color:var(--border2)">
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <thead><tr><th style="text-align:left;padding:6px 10px;color:var(--text2);font-size:11px;text-transform:uppercase">Index Value</th><th style="text-align:left;padding:6px 10px;color:var(--text2);font-size:11px;text-transform:uppercase">Maps To</th><th style="text-align:left;padding:6px 10px;color:var(--text2);font-size:11px;text-transform:uppercase">Example</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:6px 10px;font-family:'Courier New',monospace;color:var(--c1)">0</td><td style="padding:6px 10px">Option A (first)</td><td style="padding:6px 10px;color:var(--text2)"><code>"correct": 0</code> = first option is correct</td></tr>
+          <tr><td style="padding:6px 10px;font-family:'Courier New',monospace;color:var(--c1)">1</td><td style="padding:6px 10px">Option B (second)</td><td style="padding:6px 10px;color:var(--text2)"><code>"correct": 1</code> = second option is correct</td></tr>
+          <tr><td style="padding:6px 10px;font-family:'Courier New',monospace;color:var(--c1)">2</td><td style="padding:6px 10px">Option C (third)</td><td style="padding:6px 10px;color:var(--text2)"><code>"correct": 2</code> = third option is correct</td></tr>
+          <tr><td style="padding:6px 10px;font-family:'Courier New',monospace;color:var(--c1)">3</td><td style="padding:6px 10px">Option D (fourth)</td><td style="padding:6px 10px;color:var(--text2)"><code>"correct": 3</code> = fourth option is correct</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="help-p" style="margin-top:10px">
+      <span class="help-badge badge-tip">💡 Tip</span> Always ensure your <code>options</code> array has exactly <strong>4 strings</strong>. The index must be between <code>0</code> and <code>3</code>. Invalid indices will default to <code>0</code> (Option A).
+    </div>
+  </div>
+
+  <!-- Applicable Themes Reference (NEW - enhanced) -->
+  <div class="help-section">
+    <div class="help-h2">🎨 Applicable Themes <span class="help-badge badge-ai">AI-Friendly</span></div>
+    <div class="help-p">OpenQuiz supports <strong>7 color schemes</strong> plus a <strong>light mode</strong>. Set the <code>colorScheme</code> field in your JSON to one of these values:</div>
+    <div class="theme-preview-grid">
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#6c3bff,#ff5f7a)">Violet</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Violet</span><span class="theme-preview-value">"purple"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#0099ff,#00e5d0)">Ocean</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Ocean</span><span class="theme-preview-value">"ocean"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#ff6b35,#ff3d7f)">Sunset</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Sunset</span><span class="theme-preview-value">"sunset"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#1db954,#8bc34a)">Forest</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Forest</span><span class="theme-preview-value">"forest"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#e91e8c,#ff6584)">Rose</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Rose</span><span class="theme-preview-value">"rose"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#f5a623,#ff9800)">Gold</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Gold</span><span class="theme-preview-value">"gold"</span></div>
+      </div>
+      <div class="theme-preview-card">
+        <div class="theme-preview-bar" style="background:linear-gradient(135deg,#5cc8ff,#a78bfa)">Arctic</div>
+        <div class="theme-preview-body"><span class="theme-preview-name">Arctic</span><span class="theme-preview-value">"arctic"</span></div>
+      </div>
+    </div>
+    <div class="help-p" style="margin-top:6px"><span class="help-badge badge-tip">💡 Tip</span> Users can also enable <strong>Light Mode</strong> from Settings — this inverts the background/foreground while keeping the accent color scheme.</div>
+  </div>
+
+  <!-- JSON Fields Reference (Enhanced from About Page) -->
+  <div class="help-section">
+    <div class="help-h2">📊 JSON Fields Reference <span class="help-badge badge-ai">AI-Friendly</span></div>
+    <div class="help-p">Complete reference of all supported fields in the OpenQuiz JSON format. Fields marked <span class="field-req">Required</span> must be present for a valid quiz.</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Status</th><th>Description & Validation</th></tr></thead>
+        <tbody>
+          <tr><td class="field-name">title</td><td class="field-type">string</td><td><span class="field-req">Required</span></td><td>Quiz title shown on start screen (max 100 chars)</td></tr>
+          <tr><td class="field-name">subject</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Subject area (e.g. "Physics")</td></tr>
+          <tr><td class="field-name">chapter</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Chapter name (e.g. "Chapter 3")</td></tr>
+          <tr><td class="field-name">topic</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Specific sub-topic</td></tr>
+          <tr><td class="field-name">description</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Short description shown under title (max 200 chars)</td></tr>
+          <tr><td class="field-name">author</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Creator's name shown in metadata</td></tr>
+          <tr><td class="field-name">timerSeconds</td><td class="field-type">number</td><td><span class="field-opt">Optional</span></td><td>Seconds per question (default: 30, min: 5, max: 300)</td></tr>
+          <tr><td class="field-name">icon</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Single emoji icon (e.g. "🔬", "⚡")</td></tr>
+          <tr><td class="field-name">colorScheme</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>One of: purple, ocean, sunset, forest, rose, gold, arctic (default: purple)</td></tr>
+          <tr><td class="field-name">questions</td><td class="field-type">array</td><td><span class="field-req">Required</span></td><td>Array of question objects (see below). Must have at least 1 item.</td></tr>
+          <tr><td class="field-name">questions[].question</td><td class="field-type">string</td><td><span class="field-req">Required</span></td><td>The question text. Supports KaTeX math with $$...$$</td></tr>
+          <tr><td class="field-name">questions[].options</td><td class="field-type">string[]</td><td><span class="field-req">Required</span></td><td>Array of exactly 4 answer options (strings). Will be shown as A/B/C/D.</td></tr>
+          <tr><td class="field-name">questions[].correct</td><td class="field-type">number</td><td><span class="field-req">Required</span></td><td>0-based index of correct option (0=A, 1=B, 2=C, 3=D). Must be 0–3.</td></tr>
+          <tr><td class="field-name">questions[].explanation</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>Educational explanation shown after answering (recommended for learning)</td></tr>
+          <tr><td class="field-name">questions[].difficulty</td><td class="field-type">string</td><td><span class="field-opt">Optional</span></td><td>One of: "easy", "medium", "hard" (default: "easy")</td></tr>
+          <tr><td class="field-name">questions[].tags</td><td class="field-type">string[]</td><td><span class="field-opt">Optional</span></td><td>Category tags for the question (e.g. ["physics","newton"])</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AI Prompt - Enhanced -->
+  <div class="help-section">
+    <div class="help-h2">🤖 AI Prompt — Generate Quiz with Any AI <span class="help-badge badge-ai">AI-Friendly</span></div>
+    <div class="help-p">Copy the prompt below and paste it into ChatGPT, Claude, Gemini, DeepSeek, or any AI. Replace the placeholders and it will generate a ready-to-import JSON. <strong>Always verify the output before importing.</strong></div>
+    <div class="code-block" id="aiPrompt"><button class="copy-code-btn" onclick="copyCode('aiPrompt')">Copy</button>Generate an MCQ quiz in JSON format for the OpenQuiz app.
+
+Topic: [YOUR TOPIC HERE]
+Number of questions: [NUMBER, e.g. 10]
+Difficulty: [easy / medium / hard / mixed]
+Language: [e.g. English / Bengali / Hindi]
+Question style: [factual / conceptual / application-based / mixed]
+
+Return ONLY a valid JSON object (no markdown, no explanation, no backticks)
+with exactly this structure:
+
+{
+  "title": "Quiz title",
+  "subject": "Subject",
+  "chapter": "Chapter",
+  "topic": "Topic",
+  "description": "Brief description",
+  "author": "AI",
+  "timerSeconds": 30,
+  "icon": "appropriate single emoji",
+  "colorScheme": "purple",
+  "questions": [
+    {
+      "question": "Question text?",
+      "options": ["A option", "B option", "C option", "D option"],
+      "correct": 0,
+      "explanation": "Why this answer is correct — be educational",
+      "difficulty": "easy",
+      "tags": ["relevant", "tags"]
+    }
+  ]
+}
+
+RULES (strict — follow exactly):
+1. options array must have exactly 4 strings, no more no less
+2. correct is a 0-based index: 0=A, 1=B, 2=C, 3=D
+3. explanation should be educational (1-2 sentences), not just "Correct answer"
+4. colorScheme must be one of: purple, ocean, sunset, forest, rose, gold, arctic
+5. icon should be a relevant single emoji (e.g., 🔬 for science, 📚 for general)
+6. Output ONLY the JSON — no markdown blocks, no code fences, no commentary
+7. Use proper JSON syntax — double quotes, no trailing commas
+8. Distribute difficulty evenly if set to "mixed"</div>
+  </div>
+
+  <!-- Copy Full Prompt Button (NEW) -->
+  <div class="help-section">
+    <div class="help-h2">📋 AI Compatibility Checklist</div>
+    <div class="help-p">Before sending your prompt to an AI, make sure:</div>
+    <div class="card" style="padding:14px;font-size:13px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span>✅ <strong>Clear topic</strong> — specify exactly what the quiz should cover</span>
+        <span>✅ <strong>Exact count</strong> — tell the AI how many questions you need</span>
+        <span>✅ <strong>Strict format</strong> — emphasize "no markdown, just JSON"</span>
+        <span>✅ <strong>4 options only</strong> — enforce exactly 4 options per question</span>
+        <span>✅ <strong>0-based index</strong> — remind the AI about correct field indexing</span>
+        <span>✅ <strong>Educational explanations</strong> — request meaningful explanations</span>
+        <span>✅ <strong>Theme variety</strong> — try different colorScheme values for branding</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="copyFullAIPrompt()">📋 Copy Full AI Prompt</button>
+      <button class="btn btn-ghost" onclick="showPage('builder');switchBTab('import')">📥 Go to Import</button>
+    </div>
+  </div>
+
+  <!-- Example Quiz JSON -->
+  <div class="help-section">
+    <div class="help-h2">📌 Example Quiz JSON</div>
+    <div class="code-block" id="exampleJSON"><button class="copy-code-btn" onclick="copyCode('exampleJSON')">Copy</button>{
+  "title": "Physics: Laws of Motion",
+  "subject": "Physics",
+  "chapter": "Chapter 3",
+  "topic": "Newton's Laws",
+  "description": "Test your knowledge of classical mechanics",
+  "author": "Self Study",
+  "timerSeconds": 25,
+  "icon": "⚡",
+  "colorScheme": "ocean",
+  "questions": [
+    {
+      "question": "Newton's First Law is also known as the Law of?",
+      "options": ["Acceleration", "Inertia", "Gravitation", "Motion"],
+      "correct": 1,
+      "explanation": "Newton's First Law states that an object stays at rest or in motion unless acted upon by a force — this property is called Inertia.",
+      "difficulty": "easy",
+      "tags": ["newton", "inertia"]
+    },
+    {
+      "question": "If F = 10N and m = 2kg, what is the acceleration?",
+      "options": ["2 m/s²", "5 m/s²", "8 m/s²", "20 m/s²"],
+      "correct": 1,
+      "explanation": "Using F = ma, a = F/m = 10/2 = 5 m/s²",
+      "difficulty": "medium",
+      "tags": ["formula", "acceleration"]
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- Links -->
+  <div class="help-section">
+    <div class="help-h2">🔗 Links</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="https://www.selfstudy.xyz" target="_blank" class="btn btn-ghost">🌐 Self Study Website</a>
+      <a href="https://github.com/onlinephysics/OpenQuiz" target="_blank" class="btn btn-ghost">💻 Source Code on GitHub</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SETTINGS PAGE ════════════════ -->
+<div class="page hidden" id="page-settings">
+  <div class="page-header anim-up">
+    <div class="page-title">⚙️ Settings</div>
+    <div class="page-sub">App-wide preferences</div>
+  </div>
+  <div class="card anim-up-1">
+    <div class="section-label">Appearance</div>
+    <div class="toggle-row">
+      <div><strong style="font-size:14px">Light Mode</strong><br/><span style="font-size:12px;color:var(--text2)">Switch between dark and light themes</span></div>
+      <button class="toggle" id="lightToggle" onclick="toggleTheme()"></button>
+    </div>
+  </div>
+  <div class="card anim-up-2" style="margin-top:14px">
+    <div class="section-label">Data Management</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="exportAllQuizzes()">📤 Export All Quizzes</button>
+      <button class="btn btn-danger" onclick="clearAllQuizzes()">🗑️ Delete All Quizzes</button>
+    </div>
+    <p style="font-size:11px;color:var(--text3);margin-top:10px">All data is stored locally in your browser's IndexedDB. Nothing is sent to any server.</p>
+  </div>
+  <div class="card anim-up-3" style="margin-top:14px">
+    <div class="section-label">About</div>
+    <p style="font-size:13px;color:var(--text2)"><strong>OpenQuiz</strong> v1.1.0 · by <a href="https://www.selfstudy.xyz" target="_blank">Self Study</a><br/>
+    Source code: <a href="https://github.com/onlinephysics/OpenQuiz" target="_blank">openquiz.selfstudy.xyz/source-code</a></p>
+  </div>
+</div>
+
+</div><!-- /#app -->
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-wrap hidden" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">🗑️ Delete Quiz</div>
+    <div class="modal-sub">Are you sure you want to delete <strong id="deleteModalName"></strong>? This cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap hidden" id="clearAllModal">
+  <div class="modal">
+    <div class="modal-title">⚠️ Delete All Quizzes</div>
+    <div class="modal-sub">This will permanently delete ALL your quizzes from IndexedDB. Are you sure?</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('clearAllModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmClearAll()">Delete All</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script src="js/library.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/download.js"></script>
+</body>
+</html>
