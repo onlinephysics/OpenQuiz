@@ -13,18 +13,36 @@ function showPage(name){
   if(name==='library') loadLibrary();
   if(name==='builder'){
     initStyleGrids();
+    updateDownloadBtnVis();
   }
   if(name==='preview') buildPreview();
   closeSidebar();
   window.scrollTo(0,0);
 }
 
+function getSetting(key, def){
+  try{const v=localStorage.getItem('oq-'+key);return v!==null?v:def;}catch(e){return def;}
+}
+function setSetting(key, val){
+  try{localStorage.setItem('oq-'+key,val);}catch(e){}
+}
 function toggleTheme(){
   isDark=!isDark;
   document.body.classList.toggle('theme-light',!isDark);
   document.getElementById('themeToggle').textContent=isDark?'🌙':'☀️';
   document.getElementById('lightToggle').classList.toggle('on',!isDark);
   localStorage.setItem('oq-theme',isDark?'dark':'light');
+}
+function toggleDownloadBtn(){
+  const t=document.getElementById('downloadToggle');
+  const on=t.classList.toggle('on');
+  setSetting('downloadBtn',on?'1':'0');
+  updateDownloadBtnVis();
+}
+function updateDownloadBtnVis(){
+  const show=getSetting('downloadBtn','1')==='1';
+  const btn=document.getElementById('headerDownloadBtn');
+  if(btn) btn.style.display=show?'':'none';
 }
 
 // ═══ Sidebar ═══
@@ -48,6 +66,12 @@ async function init(){
   await initDB();
   const saved=localStorage.getItem('oq-theme');
   if(saved==='light'){isDark=false;document.body.classList.add('theme-light');document.getElementById('themeToggle').textContent='☀️';document.getElementById('lightToggle').classList.add('on');}
+  // Load settings
+  const downloadOn=getSetting('downloadBtn','1')==='1';
+  document.getElementById('downloadToggle').classList.toggle('on',downloadOn);
+  const footer=getSetting('footer','Made with OpenQuiz · Self Study');
+  document.getElementById('footerTextInput').value=footer;
+  updateDownloadBtnVis();
   loadLibrary();
 }
 

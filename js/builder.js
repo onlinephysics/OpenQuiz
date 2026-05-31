@@ -16,9 +16,93 @@ function newQuiz(){
   builderState = {questions:[],icon:'📝',colorScheme:'purple',backdropData:null};
   clearBuilderForm();
   document.getElementById('builderTitle').textContent = '✏️ New Quiz';
-  switchBTab('info');
   showPage('builder');
   initStyleGrids();
+  // Show create mode selector, hide builder tabs
+  document.getElementById('createModeSelector').style.display = 'block';
+  document.getElementById('switchModeBar').classList.add('hidden');
+  document.getElementById('buildProgressWrap').style.display = 'none';
+  document.getElementById('builderTabs').style.display = 'none';
+  document.getElementById('headerViewJSON').style.display = 'none';
+  // Hide all tabs
+  ['info','questions','style','import','preview'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.add('hidden');
+    document.getElementById('btab-'+t).classList.remove('active');
+  });
+}
+
+function startManualBuild(){
+  document.getElementById('createModeSelector').style.display = 'none';
+  document.getElementById('switchModeBar').classList.remove('hidden');
+  document.getElementById('buildProgressWrap').style.display = 'block';
+  document.getElementById('builderTabs').style.display = 'flex';
+  document.getElementById('headerViewJSON').style.display = '';
+  document.getElementById('currentModeLabel').textContent = '✏️ Manual';
+  document.getElementById('btnViewJSON').classList.remove('hidden');
+  document.getElementById('btnBackToManual').classList.add('hidden');
+  document.getElementById('btnApplyJSON').style.display = 'none';
+  switchBTab('info');
+  updateProgress();
+}
+
+function startJSONBuild(){
+  document.getElementById('createModeSelector').style.display = 'none';
+  document.getElementById('switchModeBar').classList.remove('hidden');
+  document.getElementById('buildProgressWrap').style.display = 'block';
+  document.getElementById('builderTabs').style.display = 'flex';
+  document.getElementById('headerViewJSON').style.display = 'none';
+  document.getElementById('currentModeLabel').textContent = '📥 JSON Import';
+  document.getElementById('btnViewJSON').classList.add('hidden');
+  document.getElementById('btnBackToManual').classList.remove('hidden');
+  document.getElementById('btnApplyJSON').style.display = '';
+  clearJSONInput();
+  switchBTab('import');
+}
+
+function viewQuizAsJSON(){
+  const data = {
+    title: document.getElementById('f-title').value.trim() || 'My Quiz',
+    subject: document.getElementById('f-subject').value.trim() || '',
+    chapter: document.getElementById('f-chapter').value.trim() || '',
+    topic: document.getElementById('f-topic').value.trim() || '',
+    description: document.getElementById('f-desc').value.trim() || '',
+    author: document.getElementById('f-author').value.trim() || '',
+    timerSeconds: parseInt(document.getElementById('f-timer').value) || 30,
+    icon: builderState.icon || '📝',
+    colorScheme: builderState.colorScheme || 'purple',
+    questions: builderState.questions
+  };
+  document.getElementById('jsonInput').value = JSON.stringify(data, null, 2);
+  document.getElementById('btnApplyJSON').style.display = '';
+  validateJSON();
+  switchBTab('import');
+  document.getElementById('currentModeLabel').textContent = '📋 JSON View (editing)';
+  document.getElementById('headerViewJSON').style.display = 'none';
+  document.getElementById('btnViewJSON').classList.add('hidden');
+  document.getElementById('btnBackToManual').classList.remove('hidden');
+}
+
+function applyJSONToBuilder(){
+  if(!validateJSON()) return;
+  try{
+    const d = JSON.parse(document.getElementById('jsonInput').value.trim());
+    loadQuizDataIntoBuilder(d);
+    toast('✅ JSON applied to builder!','ok');
+    backToManual();
+  }catch(e){toast('❌ Failed to apply: '+e.message,'err');}
+}
+
+function backToManual(){
+  document.getElementById('currentModeLabel').textContent = '✏️ Manual';
+  document.getElementById('headerViewJSON').style.display = '';
+  document.getElementById('btnViewJSON').classList.remove('hidden');
+  document.getElementById('btnBackToManual').classList.add('hidden');
+  document.getElementById('btnApplyJSON').style.display = 'none';
+  if(builderState.questions.length > 0){
+    renderQuestions();
+    updateIconPreview();
+  }
+  switchBTab('info');
 }
 
 async function editQuiz(id){
@@ -40,6 +124,15 @@ async function editQuiz(id){
   document.getElementById('f-desc').value = q.description||'';
   document.getElementById('f-timer').value = q.timerSeconds||30;
   document.getElementById('f-author').value = q.author||'';
+  document.getElementById('createModeSelector').style.display = 'none';
+  document.getElementById('switchModeBar').classList.remove('hidden');
+  document.getElementById('buildProgressWrap').style.display = 'block';
+  document.getElementById('builderTabs').style.display = 'flex';
+  document.getElementById('headerViewJSON').style.display = '';
+  document.getElementById('currentModeLabel').textContent = '✏️ Manual';
+  document.getElementById('btnViewJSON').classList.remove('hidden');
+  document.getElementById('btnBackToManual').classList.add('hidden');
+  document.getElementById('btnApplyJSON').style.display = 'none';
   switchBTab('info');
   showPage('builder');
   initStyleGrids();
@@ -356,6 +449,16 @@ function loadExampleJSON(){
 function clearJSONInput(){
   document.getElementById('jsonInput').value='';
   document.getElementById('jsonStatus').style.display='none';
+}
+
+function copyBuilderJSON(){
+  const val = document.getElementById('jsonInput').value.trim();
+  if(!val){toast('⚠️ Nothing to copy — paste or generate JSON first','err');return;}
+  navigator.clipboard.writeText(val).then(()=>{
+    toast('📋 JSON copied to clipboard!','ok');
+  }).catch(()=>{
+    toast('❌ Copy failed','err');
+  });
 }
 
 function handleJSONFileUpload(e){

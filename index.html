@@ -121,15 +121,45 @@
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="showPage('library')">← Back</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewQuizAsJSON()" id="headerViewJSON" title="View / Edit as JSON">📋 JSON</button>
         <button class="btn btn-success btn-sm" onclick="saveQuiz()">💾 Save</button>
-        <button class="btn btn-primary btn-sm" onclick="downloadQuizHTML()">⬇️ Download HTML</button>
+        <button class="btn btn-primary btn-sm" onclick="downloadQuizHTML()" id="headerDownloadBtn">⬇️ Download HTML</button>
       </div>
     </div>
   </div>
 
-  <div class="build-progress anim-up-1"><div class="build-progress-fill" id="buildProgress" style="width:10%"></div></div>
+  <!-- Create Mode Selector (shown when creating new quiz) -->
+  <div id="createModeSelector" class="anim-up-1" style="margin-bottom:20px">
+    <div class="page-title" style="font-size:18px;margin-bottom:4px;text-align:center">How do you want to create your quiz?</div>
+    <div class="page-sub" style="text-align:center;margin-bottom:16px">Choose your preferred method below — you can switch anytime</div>
+    <div class="create-mode-selector">
+      <div class="create-mode-card" onclick="startManualBuild()">
+        <div class="create-mode-card-icon">✏️</div>
+        <div class="create-mode-card-title">Create Manually</div>
+        <div class="create-mode-card-desc">Use the form builder to add questions one by one, pick styles, and preview</div>
+        <div class="badge badge-manual">Form Builder</div>
+      </div>
+      <div class="create-mode-card" onclick="startJSONBuild()">
+        <div class="create-mode-card-icon">📥</div>
+        <div class="create-mode-card-title">Create from JSON</div>
+        <div class="create-mode-card-desc">Paste or upload a JSON file — perfect for AI-generated or pre-made quizzes</div>
+        <div class="badge badge-json">JSON Import</div>
+      </div>
+    </div>
+  </div>
 
-  <div class="builder-tabs anim-up-2">
+  <!-- Switch mode bar (visible after choosing) -->
+  <div id="switchModeBar" class="hidden anim-up-1">
+    <div class="create-switch-bar">
+      <span>Mode: <strong id="currentModeLabel">✏️ Manual</strong></span>
+      <button class="btn btn-ghost btn-sm" onclick="viewQuizAsJSON()" id="btnViewJSON">📋 View as JSON</button>
+      <button class="btn btn-ghost btn-sm hidden" onclick="backToManual()" id="btnBackToManual">✏️ Back to Manual</button>
+    </div>
+  </div>
+
+  <div class="build-progress anim-up-1" id="buildProgressWrap"><div class="build-progress-fill" id="buildProgress" style="width:10%"></div></div>
+
+  <div class="builder-tabs anim-up-2" id="builderTabs">
     <div class="btab active" id="btab-info" onclick="switchBTab('info')">📋 Info</div>
     <div class="btab" id="btab-questions" onclick="switchBTab('questions')">❓ Questions</div>
     <div class="btab" id="btab-style" onclick="switchBTab('style')">🎨 Style</div>
@@ -147,13 +177,13 @@
           <input type="text" id="f-title" placeholder="e.g. Physics Chapter 1" oninput="updateProgress()"/>
         </div>
         <div class="form-group">
-          <label>Subject</label>
+          <label>Subject (optional)</label>
           <input type="text" id="f-subject" placeholder="e.g. Physics"/>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Chapter / Topic</label>
+          <label>Chapter / Topic (optional)</label>
           <input type="text" id="f-chapter" placeholder="e.g. Motion"/>
         </div>
         <div class="form-group">
@@ -244,6 +274,8 @@
         <div id="jsonStatus" style="display:none" class="json-status"></div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="importFromJSON()">📥 Import JSON</button>
+          <button class="btn btn-success" onclick="applyJSONToBuilder()" id="btnApplyJSON" style="display:none">✅ Apply to Builder</button>
+          <button class="btn btn-ghost" onclick="copyBuilderJSON()">📋 Copy JSON</button>
           <button class="btn btn-ghost" onclick="loadExampleJSON()">🧪 Load Example</button>
           <button class="btn btn-ghost" onclick="clearJSONInput()">✕ Clear</button>
         </div>
@@ -534,6 +566,18 @@ RULES (strict — follow exactly):
     <p style="font-size:11px;color:var(--text3);margin-top:10px">All data is stored locally in your browser's IndexedDB. Nothing is sent to any server.</p>
   </div>
   <div class="card anim-up-3" style="margin-top:14px">
+    <div class="section-label">Quiz Output</div>
+    <div class="toggle-row">
+      <div><strong style="font-size:14px">Show Download HTML Button</strong><br/><span style="font-size:12px;color:var(--text2)">Show or hide the "Download HTML" button in the builder</span></div>
+      <button class="toggle on" id="downloadToggle" onclick="toggleDownloadBtn()"></button>
+    </div>
+    <div style="margin-top:12px">
+      <label>Custom Footer Text</label>
+      <input type="text" id="footerTextInput" value="Made with OpenQuiz · Self Study" placeholder="e.g. My Quiz App" oninput="setSetting('footer',this.value)" style="margin-top:4px"/>
+      <p style="font-size:11px;color:var(--text3);margin-top:4px">This text replaces the "Made with OpenQuiz · Self Study" footer in downloaded quiz HTML. Supports <code>&lt;a&gt;</code> tags.</p>
+    </div>
+  </div>
+  <div class="card anim-up-4" style="margin-top:14px">
     <div class="section-label">About</div>
     <p style="font-size:13px;color:var(--text2)"><strong>OpenQuiz</strong> v1.1.0 · by <a href="https://www.selfstudy.xyz" target="_blank">Self Study</a><br/>
     Source code: <a href="https://github.com/onlinephysics/OpenQuiz" target="_blank">openquiz.selfstudy.xyz/source-code</a></p>

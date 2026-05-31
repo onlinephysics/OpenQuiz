@@ -262,7 +262,7 @@ body.dark .option-btn:nth-child(3) .opt-label{background:#1a2e1a;color:#a5d6a7}b
     </div>
   </div>
   <footer class="site-footer">
-    <div class="footer-copy">Made with <a href="https://openquiz.selfstudy.xyz" target="_blank">OpenQuiz</a> · <a href="https://www.selfstudy.xyz" target="_blank">Self Study</a></div>
+    <div class="footer-copy">${getSetting('footer','Made with OpenQuiz · Self Study')}</div>
   </footer>
 </div>
 
