@@ -25,7 +25,7 @@ function newQuiz(){
   document.getElementById('builderTabs').style.display = 'none';
   document.getElementById('headerViewJSON').style.display = 'none';
   // Hide all tabs
-  ['info','questions','style','import','preview'].forEach(t=>{
+  ['info','questions','style','import','ai','preview'].forEach(t=>{
     document.getElementById('tab-'+t).classList.add('hidden');
     document.getElementById('btab-'+t).classList.remove('active');
   });
@@ -107,23 +107,17 @@ function backToManual(){
 
 async function editQuiz(id){
   const quizzes = await getAllQuizzes();
-  const q = quizzes.find(q=>q.id===id);
+  const q = quizzes.find(c=>c.id===id);
   if(!q) return;
   currentEditId = id;
-  builderState = {
-    questions: JSON.parse(JSON.stringify(q.questions||[])),
-    icon: q.icon||'📝',
-    colorScheme: q.colorScheme||'purple',
-    backdropData: q.backdropData||null
-  };
+  try{
+    loadQuizDataIntoBuilder(q);
+    builderState.backdropData = q.backdropData||null;
+  }catch(e){
+    toast('❌ Failed to load quiz','err');
+    return;
+  }
   document.getElementById('builderTitle').textContent = '✏️ Edit Quiz';
-  document.getElementById('f-title').value = q.title||'';
-  document.getElementById('f-subject').value = q.subject||'';
-  document.getElementById('f-chapter').value = q.chapter||'';
-  document.getElementById('f-topic').value = q.topic||'';
-  document.getElementById('f-desc').value = q.description||'';
-  document.getElementById('f-timer').value = q.timerSeconds||30;
-  document.getElementById('f-author').value = q.author||'';
   document.getElementById('createModeSelector').style.display = 'none';
   document.getElementById('switchModeBar').classList.remove('hidden');
   document.getElementById('buildProgressWrap').style.display = 'block';
@@ -133,12 +127,8 @@ async function editQuiz(id){
   document.getElementById('btnViewJSON').classList.remove('hidden');
   document.getElementById('btnBackToManual').classList.add('hidden');
   document.getElementById('btnApplyJSON').style.display = 'none';
-  switchBTab('info');
   showPage('builder');
-  initStyleGrids();
-  renderQuestions();
-  updateIconPreview();
-  updateProgress();
+  switchBTab('info');
   if(builderState.backdropData) showBackdropPreview(builderState.backdropData);
 }
 
@@ -155,7 +145,7 @@ function clearBuilderForm(){
 }
 
 function switchBTab(tab){
-  ['info','questions','style','import','preview'].forEach(t=>{
+  ['info','questions','style','import','ai','preview'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab);
     document.getElementById('btab-'+t).classList.toggle('active',t===tab);
   });
