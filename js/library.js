@@ -78,7 +78,6 @@ function renderQuizCard(q){
         <button class="btn btn-ghost btn-sm" onclick="editQuiz('${q.id}')">✏️ Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="downloadQuizHTMLById('${q.id}')">⬇️ HTML</button>
         <button class="btn btn-ghost btn-sm" onclick="exportQuizJSON('${q.id}')">📤 JSON</button>
-        <button class="btn btn-ghost btn-sm" onclick="openVersionHistory('${q.id}')" title="View versions">⏱️</button>
         <button class="btn btn-danger btn-sm" onclick="promptDelete('${q.id}','${esc(q.title||'Untitled')}')">🗑️</button>
       </div>
     </div>
@@ -91,7 +90,6 @@ function promptDelete(id,name){
   document.getElementById('deleteModalName').textContent=name;
   document.getElementById('deleteModal').classList.remove('hidden');
   document.getElementById('confirmDeleteBtn').onclick=async()=>{
-    await deleteVersionsForQuiz(pendingDeleteId);
     await deleteQuizDB(pendingDeleteId);
     closeModal('deleteModal');
     loadLibrary();
@@ -100,14 +98,7 @@ function promptDelete(id,name){
 }
 
 async function clearAllQuizzes(){document.getElementById('clearAllModal').classList.remove('hidden');}
-async function confirmClearAll(){
-  // Clear both stores
-  await clearAllDB();
-  const tx=db.transaction(VERSION_STORE,'readwrite');
-  const store=tx.objectStore(VERSION_STORE);
-  await new Promise((res,rej)=>{const r=store.clear();r.onsuccess=()=>res();r.onerror=e=>rej(e);});
-  closeModal('clearAllModal');loadLibrary();toast('🗑️ All quizzes deleted','info');
-}
+async function confirmClearAll(){await clearAllDB();closeModal('clearAllModal');loadLibrary();toast('🗑️ All quizzes deleted','info');}
 
 function importQuizFromFile(){
   const input=document.createElement('input');
@@ -160,78 +151,6 @@ async function exportQuizJSON(id){
   a.download=(q.title||'quiz').replace(/[^a-z0-9]/gi,'-').toLowerCase()+'.json';
   a.click();
   toast('📤 JSON exported!','ok');
-}
-
-// ═══ Version History ═══
-async function openVersionHistory(quizId){
-  const versions=await getVersions(quizId);
-  const quiz=await getQuiz(quizId);
-  if(!quiz){toast('❌ Quiz not found','err');return;}
-  document.getElementById('versionModalSub').textContent=quiz.title||'Untitled';
-  const list=document.getElementById('versionList');
-  if(!versions||versions.length===0){
-    list.innerHTML='<div class="version-empty">No versions saved yet. Save the quiz to create the first version.</div>';
-  }else{
-    versions.sort((a,b)=>b.num-a.num);
-    list.innerHTML=versions.map(v=>{
-      const d=new Date(v.savedAt).toLocaleString();
-      const isCurrent=v.num===(quiz.currentVersion||0);
-      return `<div class="version-item${isCurrent?' version-current':''}">
-        <div class="version-info">
-          <span class="version-num">v${v.num}</span>
-          <span class="version-label">${esc(v.label||'Snapshot')}</span>
-          <span class="version-date">${d}</span>
-          ${isCurrent?'<span class="version-badge">Current</span>':''}
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="restoreVersion('${v.id}','${quizId}')"${isCurrent?' disabled':''}>${isCurrent?'✓ Current':'↩ Restore'}</button>
-      </div>`;
-    }).join('');
-  }
-  document.getElementById('versionModal').classList.remove('hidden');
-}
-
-async function restoreVersion(versionId,quizId){
-  const tx=db.transaction(VERSION_STORE,'readonly');
-  const req=tx.objectStore(VERSION_STORE).get(versionId);
-  req.onsuccess=async e=>{
-    const v=e.target.result;
-    if(!v){toast('❌ Version not found','err');return;}
-    const snap=v.snapshot;
-    // Load into builder
-    currentEditId=quizId;
-    builderState={
-      questions:JSON.parse(JSON.stringify(snap.questions||[])),
-      icon:snap.icon||'📝',
-      colorScheme:snap.colorScheme||'purple',
-      backdropData:snap.backdropData||null
-    };
-    document.getElementById('builderTitle').textContent='✏️ '+snap.title;
-    document.getElementById('f-title').value=snap.title||'';
-    document.getElementById('f-subject').value=snap.subject||'';
-    document.getElementById('f-chapter').value=snap.chapter||'';
-    document.getElementById('f-topic').value=snap.topic||'';
-    document.getElementById('f-desc').value=snap.description||'';
-    document.getElementById('f-timer').value=snap.timerSeconds||30;
-    document.getElementById('f-author').value=snap.author||'';
-    document.getElementById('headerViewJSON').style.display='';
-    document.getElementById('createModeSelector').style.display='none';
-    document.getElementById('switchModeBar').classList.remove('hidden');
-    document.getElementById('buildProgressWrap').style.display='block';
-    document.getElementById('builderTabs').style.display='flex';
-    document.getElementById('currentModeLabel').textContent='✏️ Manual';
-    document.getElementById('btnViewJSON').classList.remove('hidden');
-    document.getElementById('btnBackToManual').classList.add('hidden');
-    document.getElementById('btnApplyJSON').style.display='none';
-    closeModal('versionModal');
-    showPage('builder');
-    initStyleGrids();
-    renderQuestions();
-    updateIconPreview();
-    updateProgress();
-    if(builderState.backdropData) showBackdropPreview(builderState.backdropData);
-    toast('⏱ Restored to v'+v.num,'ok');
-  };
-  req.onerror=()=>toast('❌ Failed to load version','err');
 }
 
 // Library search & sort handlers

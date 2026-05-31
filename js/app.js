@@ -44,11 +44,6 @@ function updateDownloadBtnVis(){
   const btn=document.getElementById('headerDownloadBtn');
   if(btn) btn.style.display=show?'':'none';
 }
-function toggleCopyJSONOutput(){
-  const t=document.getElementById('copyJSONToggle');
-  const on=t.classList.toggle('on');
-  setSetting('copyJSON',on?'1':'0');
-}
 
 // ═══ Sidebar ═══
 function toggleSidebar(){
@@ -74,8 +69,6 @@ async function init(){
   // Load settings
   const downloadOn=getSetting('downloadBtn','1')==='1';
   document.getElementById('downloadToggle').classList.toggle('on',downloadOn);
-  const copyJSONOn=getSetting('copyJSON','1')==='1';
-  document.getElementById('copyJSONToggle').classList.toggle('on',copyJSONOn);
   const footer=getSetting('footer','Made with OpenQuiz · Self Study');
   document.getElementById('footerTextInput').value=footer;
   const geminiKey=getSetting('geminiKey','');

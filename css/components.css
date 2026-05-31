@@ -213,17 +213,3 @@
 .library-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg)}
 .lib-stat{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)}
 .lib-stat strong{color:var(--text);font-family:var(--font-head)}
-
-/* ── Version History ── */
-.modal-wide{max-width:480px;max-height:70vh;display:flex;flex-direction:column}
-.version-list{flex:1;overflow-y:auto;margin:8px 0 12px;min-height:60px}
-.version-empty{text-align:center;padding:24px;color:var(--text3);font-size:13px}
-.version-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:6px;transition:background .15s}
-.version-item:hover{background:var(--bg3)}
-.version-item.version-current{border-color:var(--c1);background:var(--c1l)}
-.version-info{flex:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;min-width:0}
-.version-num{font-size:13px;font-weight:800;color:var(--text);font-family:var(--font-head);min-width:32px}
-.version-label{font-size:12px;color:var(--text2)}
-.version-date{font-size:11px;color:var(--text3);flex:1;text-align:right}
-.version-badge{font-size:9px;font-weight:700;background:var(--c1);color:#fff;padding:2px 8px;border-radius:99px;letter-spacing:.3px}
-.version-item .btn{flex-shrink:0}
