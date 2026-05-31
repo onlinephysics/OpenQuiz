@@ -164,6 +164,7 @@
     <div class="btab" id="btab-questions" onclick="switchBTab('questions')">❓ Questions</div>
     <div class="btab" id="btab-style" onclick="switchBTab('style')">🎨 Style</div>
     <div class="btab" id="btab-import" onclick="switchBTab('import')">📥 Import JSON</div>
+    <div class="btab" id="btab-ai" onclick="switchBTab('ai')">🤖 AI</div>
     <div class="btab" id="btab-preview" onclick="switchBTab('preview')">👁 Preview</div>
   </div>
 
@@ -287,6 +288,58 @@
           <div style="font-size:13px;color:var(--text2)">Click to load a .json file</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- AI TAB -->
+  <div id="tab-ai" class="hidden">
+    <div class="card">
+      <div class="section-label">🤖 AI Quiz Generator</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Describe the quiz you want, and Gemma 4 will generate questions in OpenQuiz JSON format.</p>
+
+      <div class="form-group">
+        <label>Topic / Description *</label>
+        <textarea id="aiPrompt" placeholder="e.g. Generate a 5-question quiz about the Solar System for middle school students." style="min-height:80px;margin-top:4px"></textarea>
+      </div>
+
+      <div class="form-row" style="margin-top:8px">
+        <div class="form-group">
+          <label>Number of Questions</label>
+          <input type="number" id="aiCount" value="5" min="2" max="20" style="margin-top:4px"/>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="aiDifficulty" style="margin-top:4px">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:8px">
+        <label>Subject (optional)</label>
+        <input type="text" id="aiSubject" placeholder="e.g. Physics, History, Biology" style="margin-top:4px"/>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="generateWithAI()" id="aiGenerateBtn">🚀 Generate with AI</button>
+        <button class="btn btn-ghost" onclick="importAIResult()" id="aiImportBtn" style="display:none">📥 Import to Builder</button>
+        <button class="btn btn-ghost" onclick="clearAIResult()">✕ Clear</button>
+      </div>
+
+      <div id="aiLoading" class="hidden" style="margin-top:14px;text-align:center;padding:20px">
+        <div class="ai-spinner"></div>
+        <div style="font-size:13px;color:var(--text2);margin-top:8px">Generating quiz... This may take a moment.</div>
+      </div>
+
+      <div id="aiResult" class="hidden" style="margin-top:14px">
+        <label>Generated JSON</label>
+        <textarea class="json-area" id="aiResultJSON" readonly style="min-height:120px"></textarea>
+      </div>
+
+      <div id="aiError" class="hidden" style="margin-top:12px;padding:12px;background:var(--wrong-bg);border:1px solid var(--wrong);border-radius:var(--radius-md);font-size:13px;color:var(--wrong)"></div>
     </div>
   </div>
 
@@ -435,7 +488,7 @@
   <div class="help-section">
     <div class="help-h2">🤖 AI Prompt — Generate Quiz with Any AI <span class="help-badge badge-ai">AI-Friendly</span></div>
     <div class="help-p">Copy the prompt below and paste it into ChatGPT, Claude, Gemini, DeepSeek, or any AI. Replace the placeholders and it will generate a ready-to-import JSON. <strong>Always verify the output before importing.</strong></div>
-    <div class="code-block" id="aiPrompt"><button class="copy-code-btn" onclick="copyCode('aiPrompt')">Copy</button>Generate an MCQ quiz in JSON format for the OpenQuiz app.
+    <div class="code-block" id="aiPromptBlock"><button class="copy-code-btn" onclick="copyCode('aiPromptBlock')">Copy</button>Generate an MCQ quiz in JSON format for the OpenQuiz app.
 
 Topic: [YOUR TOPIC HERE]
 Number of questions: [NUMBER, e.g. 10]

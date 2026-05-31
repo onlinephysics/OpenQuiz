@@ -60,7 +60,8 @@ function copyText(text){
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 
 function copyFullAIPrompt(){
-  const prompt = document.getElementById('aiPrompt');
+  const prompt = document.getElementById('aiPromptBlock');
+  if(!prompt) return;
   let text = prompt.textContent.replace(/^Copy\n/,'').trim();
   copyText(text);
 }
