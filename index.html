@@ -576,6 +576,11 @@ RULES (strict — follow exactly):
       <button class="toggle on" id="copyJSONToggle" onclick="toggleCopyJSONOutput()"></button>
     </div>
     <div style="margin-top:12px">
+      <label>Gemini API Key</label>
+      <input type="password" id="geminiKeyInput" placeholder="Paste your Gemini API key" style="margin-top:4px" oninput="setSetting('geminiKey',this.value)"/>
+      <p style="font-size:11px;color:var(--text3);margin-top:4px">Required for the AI Quiz Generator. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">AI Studio</a>. In production, set via <code>GEMINI_API_KEY</code> GitHub secret.</p>
+    </div>
+    <div style="margin-top:12px">
       <label>Custom Footer Text</label>
       <input type="text" id="footerTextInput" value="Made with OpenQuiz · Self Study" placeholder="e.g. My Quiz App" oninput="setSetting('footer',this.value)" style="margin-top:4px"/>
       <p style="font-size:11px;color:var(--text3);margin-top:4px">This text replaces the "Made with OpenQuiz · Self Study" footer in downloaded quiz HTML. Supports <code>&lt;a&gt;</code> tags.</p>

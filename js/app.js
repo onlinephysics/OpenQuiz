@@ -78,6 +78,8 @@ async function init(){
   document.getElementById('copyJSONToggle').classList.toggle('on',copyJSONOn);
   const footer=getSetting('footer','Made with OpenQuiz · Self Study');
   document.getElementById('footerTextInput').value=footer;
+  const geminiKey=getSetting('geminiKey','');
+  document.getElementById('geminiKeyInput').value=geminiKey;
   updateDownloadBtnVis();
   loadLibrary();
 }
