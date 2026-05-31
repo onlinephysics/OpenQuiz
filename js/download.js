@@ -327,7 +327,7 @@ function loadQuestion(){
   $('timeoutMsg').classList.remove('show');
   $('nextBtn').classList.remove('show');
   const labels=['A','B','C','D'];
-  $('optionsContainer').innerHTML=q.options.map((o,i)=>\\`<button class="option-btn" onclick="selectOption(\\${i})"><span class="opt-label">\\${labels[i]}</span>\\${o}</button>\\`).join('');
+  $('optionsContainer').innerHTML=q.options.map((o,i)=>\`<button class="option-btn" onclick="selectOption(\${i})"><span class="opt-label">\${labels[i]}</span>\${o}</button>\`).join('');
   startTimer(QUIZ_CONFIG.timerSeconds,q);
   state.questionStartTime=Date.now();
 }
@@ -390,38 +390,38 @@ function showResult(){
       if(oi===r.correct&&oi===r.selected){cls='review-selected-correct';mk='✓';}
       else if(oi===r.correct){cls='review-correct';mk='✓';}
       else if(oi===r.selected){cls='review-wrong';mk='✗';}
-      opts+=\\`<div class="review-option \\${cls}"><span class="review-opt-label">\\${'ABCD'[oi]}</span><span class="review-opt-text">\\${o}</span>\\${mk?\\`<span class="review-opt-marker">\\${mk}</span>\\`:''}</div>\\`;
+      opts+=\`<div class="review-option \${cls}"><span class="review-opt-label">\${'ABCD'[oi]}</span><span class="review-opt-text">\${o}</span>\${mk?\`<span class="review-opt-marker">\${mk}</span>\`:''}</div>\`;
     });
-    rev+=\\`<div class="review-card \\${sc} anim-fade-up" style="animation-delay:\\${i*.05}s">
-      <div class="review-card-header"><span class="review-q-number">Q\\${i+1}</span><span class="review-status \\${sbc}">\\${sl}</span><span class="review-time">\\${r.timeTaken}s</span></div>
-      <div class="review-question">\\${r.question}</div>
-      <div class="review-options">\\${opts}</div>
-      \\${r.explanation?\\`<div class="review-explanation"><div class="review-ex-title">💡 Explanation</div><div class="review-ex-text">\\${r.explanation}</div></div>\\`:''}
-    </div>\\`;
+    rev+=\`<div class="review-card \${sc} anim-fade-up" style="animation-delay:\${i*.05}s">
+      <div class="review-card-header"><span class="review-q-number">Q\${i+1}</span><span class="review-status \${sbc}">\${sl}</span><span class="review-time">\${r.timeTaken}s</span></div>
+      <div class="review-question">\${r.question}</div>
+      <div class="review-options">\${opts}</div>
+      \${r.explanation?\`<div class="review-explanation"><div class="review-ex-title">💡 Explanation</div><div class="review-ex-text">\${r.explanation}</div></div>\`:''}
+    </div>\`;
   });
-  $('resultBox').innerHTML=\\`
+  $('resultBox').innerHTML=\`
     <div style="text-align:center;padding:10px 0 8px">
-      <div style="margin-bottom:12px"><span style="font-size:14px;font-weight:800;padding:3px 14px;border-radius:99px;background:\\${gc}20;color:\\${gc}">\\${pct}% — \\${gl}</span></div>
+      <div style="margin-bottom:12px"><span style="font-size:14px;font-weight:800;padding:3px 14px;border-radius:99px;background:\${gc}20;color:\${gc}">\${pct}% — \${gl}</span></div>
       <div class="result-stats-grid">
-        <div class="result-stat correct-stat"><div class="stat-icon">✅</div><div class="stat-value">\\${state.correctCount}</div><div class="stat-label">Correct</div></div>
-        <div class="result-stat wrong-stat"><div class="stat-icon">❌</div><div class="stat-value">\\${state.wrongCount}</div><div class="stat-label">Wrong</div></div>
-        <div class="result-stat timeout-stat"><div class="stat-icon">⏱</div><div class="stat-value">\\${state.timeoutCount}</div><div class="stat-label">Timeout</div></div>
-        <div class="result-stat" style="border-color:var(--primary)"><div class="stat-icon">🎯</div><div class="stat-value" style="color:var(--primary)">\\${state.score}</div><div class="stat-label">Score</div></div>
-        <div class="result-stat" style="border-color:var(--muted)"><div class="stat-icon">⏱</div><div class="stat-value">\\${avgTime}s</div><div class="stat-label">Avg Time</div></div>
-        <div class="result-stat" style="border-color:var(--muted)"><div class="stat-icon">📊</div><div class="stat-value">\\${state.totalQuestions}</div><div class="stat-label">Total</div></div>
+        <div class="result-stat correct-stat"><div class="stat-icon">✅</div><div class="stat-value">\${state.correctCount}</div><div class="stat-label">Correct</div></div>
+        <div class="result-stat wrong-stat"><div class="stat-icon">❌</div><div class="stat-value">\${state.wrongCount}</div><div class="stat-label">Wrong</div></div>
+        <div class="result-stat timeout-stat"><div class="stat-icon">⏱</div><div class="stat-value">\${state.timeoutCount}</div><div class="stat-label">Timeout</div></div>
+        <div class="result-stat" style="border-color:var(--primary)"><div class="stat-icon">🎯</div><div class="stat-value" style="color:var(--primary)">\${state.score}</div><div class="stat-label">Score</div></div>
+        <div class="result-stat" style="border-color:var(--muted)"><div class="stat-icon">⏱</div><div class="stat-value">\${avgTime}s</div><div class="stat-label">Avg Time</div></div>
+        <div class="result-stat" style="border-color:var(--muted)"><div class="stat-icon">📊</div><div class="stat-value">\${state.totalQuestions}</div><div class="stat-label">Total</div></div>
       </div>
       <div class="result-actions"><button class="restart-btn" onclick="restartQuiz()">🔄 Restart Quiz</button></div>
       <div class="result-review-section">
         <div class="review-header"><h4>📋 Review All Questions</h4></div>
         <div class="review-filter-group">
-          <button class="review-filter-btn active-all" data-f="all" onclick="setFilter('all')">📋 All (\\${state.totalQuestions})</button>
-          <button class="review-filter-btn" data-f="correct" onclick="setFilter('correct')">✅ Correct (\\${state.correctCount})</button>
-          <button class="review-filter-btn" data-f="wrong" onclick="setFilter('wrong')">❌ Wrong (\\${state.wrongCount})</button>
-          <button class="review-filter-btn" data-f="timeout" onclick="setFilter('timeout')">⏱ Timeout (\\${state.timeoutCount})</button>
+          <button class="review-filter-btn active-all" data-f="all" onclick="setFilter('all')">📋 All (\${state.totalQuestions})</button>
+          <button class="review-filter-btn" data-f="correct" onclick="setFilter('correct')">✅ Correct (\${state.correctCount})</button>
+          <button class="review-filter-btn" data-f="wrong" onclick="setFilter('wrong')">❌ Wrong (\${state.wrongCount})</button>
+          <button class="review-filter-btn" data-f="timeout" onclick="setFilter('timeout')">⏱ Timeout (\${state.timeoutCount})</button>
         </div>
-        <div id="reviewCards">\\${rev}</div>
+        <div id="reviewCards">\${rev}</div>
       </div>
-    </div>\\`;
+    </div>\`;
 }
 function setFilter(f){
   document.querySelectorAll('.review-filter-btn').forEach(b=>{b.className='review-filter-btn';if(b.dataset.f===f)b.classList.add('active-'+f);});
