@@ -1,0 +1,28 @@
+/* ════════════════════════════════════════
+   OpenQuiz — Responsive & Mobile Styles
+   ════════════════════════════════════════ */
+
+@media(max-width:700px){
+  .hamburger{display:flex}
+  .topbar-nav{display:none}
+  .page{padding:16px}
+  .page-title{font-size:20px}
+  .quiz-grid{grid-template-columns:1fr}
+  .form-row,.form-row.triple{grid-template-columns:1fr}
+  .opts-grid{grid-template-columns:1fr}
+  .settings-grid{grid-template-columns:1fr}
+  .quick-start-grid{grid-template-columns:1fr}
+  .theme-preview-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+
+@media(max-width:480px){
+  .topbar-logo .logo-by{display:none}
+  .logo-text{font-size:16px}
+  .prev-opts{grid-template-columns:1fr}
+  .library-controls{flex-direction:column}
+  .library-sort{width:100%}
+  .library-sort select{width:100%}
+}
+
+/* ── Mobile Sidebar open — prevent body scroll ── */
+body.sidebar-open{overflow:hidden}
